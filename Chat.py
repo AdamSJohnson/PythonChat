@@ -8,6 +8,7 @@ import pyaes
 import hashlib
 import threading
 from threading import Thread
+RUNNING = True
 HOST = '127.0.0.1'
 S_HOST = '127.0.0.1'
 RECV_BUFFER = 4096 
@@ -59,7 +60,7 @@ def chat_server():
         aes = pyaes.AESModeOfOperationCTR(hashed)
         test = aes.decrypt(test)
         print((test.decode()))
-        Thread(target = listen, args=(c,hashed,)).start()
+        Thread(target = listen, args=(c,hashed,),daemon=True).start()
         Thread(target = write, args=(client_socket,hashed)).start()
         '''while True:
                                     message = c.recv(4096)
@@ -69,6 +70,8 @@ def chat_server():
                                     message = pyaes.AESModeOfOperationCTR(hashed).encrypt(message)
                                     client_socket.send(message)'''
     except KeyboardInterrupt:
+
+        
         print('dead mate')
 
 
@@ -81,6 +84,7 @@ def chat_server():
     '''
 
 def listen(listen_socket,hashed):
+    
     try:
         while True:
             message = listen_socket.recv(4096)
@@ -88,9 +92,11 @@ def listen(listen_socket,hashed):
             print(message.decode())
     except KeyboardInterrupt:
         listen_socket.close()
+        
         raise KeyboardInterrupt
         return 0
 def write(write_socket, hashed):
+    
     try:
         while True:
             message = input()
@@ -98,6 +104,7 @@ def write(write_socket, hashed):
             write_socket.send(message)
     except KeyboardInterrupt:
         write_socket.close()
+        
         raise KeyboardInterrupt
         return 0
 #chat_server()

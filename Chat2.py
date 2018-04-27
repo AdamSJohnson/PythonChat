@@ -13,6 +13,7 @@ S_HOST = '127.0.0.1'
 RECV_BUFFER = 4096 
 PORT = 81
 S_PORT = 80
+RUNNING = True
 def chat_server():
     try:
         #create the sending socket
@@ -63,7 +64,7 @@ def chat_server():
 
         test = aes.decrypt(test)
         print((test.decode()))
-        Thread(target = listen, args=(c,hashed,)).start()
+        Thread(target = listen, args=(c,hashed,), daemon=True).start()
         Thread(target = write, args=(client_socket,hashed)).start() 
         '''
         while True:
@@ -76,6 +77,7 @@ def chat_server():
             message = pyaes.AESModeOfOperationCTR(hashed).decrypt(message)
             print(message.decode())'''
     except KeyboardInterrupt:
+        RUNNING = False
         print('dead mate')
 
     '''
@@ -87,6 +89,7 @@ def chat_server():
     '''
 
 def listen(listen_socket,hashed):
+    
     try:
         while True:
             message = listen_socket.recv(4096)
@@ -94,9 +97,11 @@ def listen(listen_socket,hashed):
             print(message.decode())
     except KeyboardInterrupt:
         listen_socket.close()
+        
         raise KeyboardInterrupt
         return 0
 def write(write_socket, hashed):
+    
     try:
         while True:
             message = input()
@@ -104,6 +109,7 @@ def write(write_socket, hashed):
             write_socket.send(message)
     except KeyboardInterrupt:
         write_socket.close()
+        
         raise KeyboardInterrupt
         return 0
 #chat_server()
