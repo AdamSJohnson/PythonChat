@@ -2,7 +2,7 @@
 import sys
 import socket
 import select
-import Elgalmal as eg
+import Elgamal as eg
 import time
 import pyaes
 import hashlib
@@ -100,4 +100,4 @@ def write(write_socket, hashed):
         write_socket.close()
         raise KeyboardInterrupt
         return 0
-chat_server()
+#chat_server()
