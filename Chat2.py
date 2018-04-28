@@ -64,20 +64,18 @@ def chat_server():
 
         test = aes.decrypt(test)
         print((test.decode()))
-        Thread(target = listen, args=(c,hashed,), daemon=True).start()
-        Thread(target = write, args=(client_socket,hashed)).start() 
-        '''
-        while True:
-            
-            message = input()
-            message = pyaes.AESModeOfOperationCTR(hashed).encrypt(message)
-            client_socket.send(message)
-
-            message = c.recv(4096)
-            message = pyaes.AESModeOfOperationCTR(hashed).decrypt(message)
-            print(message.decode())'''
-    except KeyboardInterrupt:
+        t = Thread(target = listen, args=(c,hashed,))
+        t.start()
+        t2 = Thread(target = write, args=(client_socket,hashed),daemon=True).start() 
+        #print( threading.active_count())
+        while threading.active_count() > 2:
+            a = 1
+    except (KeyboardInterrupt,EOFError,ConnectionResetError):
         RUNNING = False
+        
+        client_socket.close()
+               
+
         print('dead mate')
 
     '''
@@ -93,23 +91,31 @@ def listen(listen_socket,hashed):
     try:
         while True:
             message = listen_socket.recv(4096)
+            try:
+                if message.decode() == '':
+                    print('killed em')
+                    listen_socket.close()
+                    raise SystemExit
+                    return 0
+            except UnicodeDecodeError:
+                pass    
             message = pyaes.AESModeOfOperationCTR(hashed).decrypt(message)
             print(message.decode())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError, ConnectionResetError):
         listen_socket.close()
         
-        raise KeyboardInterrupt
-        return 0
+
 def write(write_socket, hashed):
     
     try:
         while True:
             message = input()
+            #print(message)
             message = pyaes.AESModeOfOperationCTR(hashed).encrypt(message)
             write_socket.send(message)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError, ConnectionResetError):
         write_socket.close()
-        
-        raise KeyboardInterrupt
         return 0
+        
+
 #chat_server()
