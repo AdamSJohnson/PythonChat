@@ -67,7 +67,7 @@ def chat_server():
         
         #listen_socket.close()
         while threading.active_count() > 2:
-            a = 1
+            pass
         
     except (KeyboardInterrupt,EOFError,ConnectionResetError):
         RUNNING = False

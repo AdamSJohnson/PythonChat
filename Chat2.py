@@ -69,7 +69,7 @@ def chat_server():
         t2 = Thread(target = write, args=(client_socket,hashed),daemon=True).start() 
         #print( threading.active_count())
         while threading.active_count() > 2:
-            a = 1
+            pass
     except (KeyboardInterrupt,EOFError,ConnectionResetError):
         RUNNING = False
         
