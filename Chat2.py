@@ -11,7 +11,7 @@ from threading import Thread
 HOST = '127.0.0.1'
 S_HOST = '127.0.0.1'
 RECV_BUFFER = 4096 
-PORT = 81
+PORT = 80
 S_PORT = 80
 RUNNING = True
 def chat_server():
@@ -20,11 +20,7 @@ def chat_server():
         client_socket = socket.socket()
         client_socket.connect((S_HOST, S_PORT))
         print('client connected')
-        #create the listening socket
-        listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        listen_socket.bind((HOST, PORT))
-        listen_socket.listen(10)
-        c, addr = listen_socket.accept()
+        
         print('connected')
         #print("connected")
         #print(c)
@@ -33,7 +29,7 @@ def chat_server():
         #time to setup the preamble
         #since I connected I wait to get the public keys
         #I need a prime
-        keys = c.recv(4096).decode()
+        keys = client_socket.recv(4096).decode()
         keys = keys.split(',')
         p = int(keys[0])
         #I need a g value
@@ -64,7 +60,7 @@ def chat_server():
 
         test = aes.decrypt(test)
         print((test.decode()))
-        t = Thread(target = listen, args=(c,hashed,))
+        t = Thread(target = listen, args=(client_socket,hashed,))
         t.start()
         t2 = Thread(target = write, args=(client_socket,hashed),daemon=True).start() 
         #print( threading.active_count())

@@ -13,7 +13,7 @@ HOST = '127.0.0.1'
 S_HOST = '127.0.0.1'
 RECV_BUFFER = 4096 
 PORT = 80
-S_PORT = 81
+S_PORT = 80
 def chat_server():
     try:
         keys = eg.elgamal_generate_keys()
@@ -23,18 +23,13 @@ def chat_server():
         g_a = keys[3]
         print(keys)
         #create the listening socket
-        listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        listen_socket.bind((HOST, PORT))
-        listen_socket.listen(1000)
-        c, addr = listen_socket.accept()
-        print('connected')
-        #create the sending socket
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((HOST, S_PORT))
-        #print("connected")
-        #print(c)
-        #print(addr)
+        client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        client_socket.bind((HOST, PORT))
+        client_socket.listen(1000)
+        client_socket, addr = client_socket.accept()
+        print('connected')
+        
         print('client connected')
         #since I was the one connected to the protocol is I send my 
         #public keys
@@ -45,7 +40,7 @@ def chat_server():
         
 
         #get the other client's public half
-        g_b = int(c.recv(4096))
+        g_b = int(client_socket.recv(4096))
 
         g_a_b = pow(g_b,a,p)
         print(g_a_b)
@@ -60,7 +55,7 @@ def chat_server():
         aes = pyaes.AESModeOfOperationCTR(hashed)
         test = aes.decrypt(test)
         print((test.decode()))
-        t = Thread(target = listen, args=(c,hashed,))
+        t = Thread(target = listen, args=(client_socket,hashed,))
         t.start()
         t2 = Thread(target = write, args=(client_socket,hashed),daemon=True)
         t2.start()
