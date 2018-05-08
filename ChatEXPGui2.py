@@ -19,7 +19,7 @@ from tkinter import END, LEFT, RIGHT, TOP, BOTTOM, BOTH, Y, NE, NS, NSEW, W, E, 
 from tkinter import ttk
 from tkinter.font import Font
 from tkinter import VERTICAL, HORIZONTAL
-
+import textwrap
 import random
 
 RUNNING = True
@@ -34,10 +34,12 @@ class introWindow(tk.Frame):
     
 
     def __init__(self, master, frame_look={}, **look):
+        #define our send function that takes input and sends it over the wire
+        #while also writing what we said to the text box
         def send(event=''):
             try:
                 #get the message from the field
-                msg = 'Alice: ' + self.my_msg.get()
+                msg = 'Bob: ' + self.my_msg.get()
                 #clear the field
                 self.my_msg.set("")
 
@@ -45,8 +47,10 @@ class introWindow(tk.Frame):
                 #we want to print the message from us to the screen as well
 
                 self.msg_list.insert(tk.END, msg)
+                self.msg_list.see(tk.END)
                 msg = pyaes.AESModeOfOperationCTR(self.hashed).encrypt(msg)
                 self.client_socket.send(msg)
+            #here is the errors we can run into, all are close and destroy the interface
             except (KeyboardInterrupt, EOFError,ConnectionResetError, OSError):
                 self.client_socket.close()
                 self.destroy()
@@ -54,7 +58,7 @@ class introWindow(tk.Frame):
             #send the message over the wire
             return 0
 
-
+        #this is just a useful template frame with nice settings
         args = dict(relief=tk.SUNKEN, border=1)
         args.update(frame_look)
         tk.Frame.__init__(self, master, **args)
@@ -79,7 +83,7 @@ class introWindow(tk.Frame):
         self.msg_list.pack()
         
 
-
+        #setup our entry frame to house the text box and button
         self.entry_frame = tk.Frame(self)
         self.entry_field = tk.Entry(self.entry_frame,textvariable=self.my_msg)
         self.entry_field.bind("<Return>", send)
@@ -92,8 +96,10 @@ class introWindow(tk.Frame):
         self.client_socket, self.hashed= self.chat_server()
         #self.msg_list.insert(tk.END, 'connection received')
         #our initial gui setup is done
-        
-        #make rec thread
+        self.msg_list.insert(tk.END, "Welcome to the chat program.")
+        self.msg_list.insert(tk.END, "These are you keys: (Compare with your partner)")
+        self.msg_list.insert(tk.END, int.from_bytes(self.hashed, byteorder='big', signed=False))        
+        #make listen thread
         t = Thread(target = self.listen, daemon=True).start()
 
 
@@ -111,7 +117,11 @@ class introWindow(tk.Frame):
                 except UnicodeDecodeError:
                     pass    
                 message = pyaes.AESModeOfOperationCTR(self.hashed).decrypt(message)
-                self.msg_list.insert(tk.END,message.decode())
+                m_list = textwrap.wrap(message.decode(),width=48)
+                for m in m_list:
+                    self.msg_list.insert(tk.END,m)
+                    self.msg_list.see(tk.END)
+                #self.msg_list.insert(tk.END,message.decode())
         except (KeyboardInterrupt, EOFError,ConnectionResetError, OSError):
             self.client_socket.close()
 
