@@ -28,29 +28,6 @@ S_HOST = '127.0.0.1'
 RECV_BUFFER = 4096 
 PORT = 80
 S_PORT = 80
-
-
-
-
-
-
-        
-
-def write(write_socket, hashed):
-    
-    try:
-        while True:
-            message = input()
-            #print(message)
-            message = pyaes.AESModeOfOperationCTR(hashed).encrypt(message)
-            write_socket.send(message)
-    except (KeyboardInterrupt, EOFError,ConnectionResetError):
-        write_socket.close()
-        return 0
-        
-
-
-
     
 class introWindow(tk.Frame):
     
