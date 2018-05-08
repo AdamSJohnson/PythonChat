@@ -27,7 +27,7 @@ HOST = '127.0.0.1'
 S_HOST = '127.0.0.1'
 RECV_BUFFER = 4096 
 PORT = 80
-S_PORT = 81
+S_PORT = 80
 
 
 
